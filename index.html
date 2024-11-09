@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Image Puzzle Game</title>
+    <style>
+        body {
+            display: flex;
+            background-image:url(back.avif);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+           background-size: cover;
+           background-position: center;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 50px;
+        }
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 1px;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+   
+        }
+        .puzzle-piece {
+            width: 100px;
+            height: 100px;
+            background-size: 300px 300px;
+            cursor: pointer;
+            transition: border 0.3s;
+        }
+        .selected {
+            border: 2px solid red;
+        }
+        #timer {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: white;
+            font-weight: bold;
+            text-transform: capitalize;
+            letter-spacing: 3px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: 800;
+            border-radius: 10px;
+            border-style: solid;
+            margin: 5px;
+            background-color: rgb(17, 192, 52);
+        }
+        #original-image {
+            width: 125px;
+            height: 125px;
+            border: 2px solid #333;
+            background-size: 100% 100%;
+        }
+        .gameName {
+            font-size: 50px;
+            background-image: linear-gradient(to left,rgb(191, 11, 11),rgb(0, 98, 255),orange);
+             border: none;
+            color: white;
+            font-style: oblique;
+            border-radius: c;
+            width: fit-content;
+            animation-name: name;
+            animation-iteration-count: infinite;
+            animation-fill-mode: both;
+            animation-duration: 3s;
+        
+            
+        }
+        @keyframes name {
+            0% {
+                background-image:linear-gradient(to left,rgb(70, 153, 7),rgb(143, 12, 147),rgb(9, 129, 133));
+                font-style: italic;
+            }
+            50% {
+                background-image:linear-gradient(to left,rgb(141, 211, 12),rgb(207, 136, 14),rgb(11, 102, 105)); 
+                font-style: normal;
+            }
+            100% {
+                background-image:linear-gradient(to left,rgb(230, 13, 13),rgb(19, 104, 241),rgb(184, 123, 10));
+                font-style: italic;
+            }
+        }
+        @media (max-width:767px) {
+            #game-container {
+                gap: 15px;
+            }
+            .gameName {
+                font-size:40px ;
+            }
+        }
+        
+        
+    </style>
+</head>
+<body>
+    
+        <h1 class="gameName">2D image puzzle game</h1>
+    <div id="timer">Time: 60s</div>
+    <div id="game-container">
+        <div id="puzzle-container"></div>
+        <div id="original-image"></div>
+    </div>
+    <button id="submit-btn">Submit</button>
+    <button id="restart-btn">Play Again</button>
+
+    <script>
+        const container = document.getElementById("puzzle-container");
+        const submitBtn = document.getElementById("submit-btn");
+        const restartBtn = document.getElementById("restart-btn");
+        const timerDisplay = document.getElementById("timer");
+        const originalImageDisplay = document.getElementById("original-image");
+        const gridSize = 3;
+        let pieces = [];
+        let selectedPiece = null;
+        let currentImage = '';
+        let timerInterval;
+        let timeRemaining = 60;
+        let gameOver = false;
+
+        
+        const imageUrls = [
+            'https://assets.onecompiler.app/42rkv658c/42xdyqv5t/1000038909.jpg', 
+            'https://assets.onecompiler.app/42rkv658c/42xdyqv5t/1000037454.jpg',
+            'animal.png',
+            'forest.jpg', 
+            'bird.webp',
+            'bujji.jpg',
+              'dhoni.jpeg',
+              'dora.png',
+              'dhoni1.avif',
+              'karthik.jpeg',
+              'keerthi.jpeg',
+              'motu.webp',
+              'patlu.jpeg',
+              'prabhas.webp',
+              'purple.jpg',
+              'ramcharan.jpeg',
+              'ratan.webp',
+              'saipallavi.jpg',
+              'shinchan.webp',
+              'smalltom.jpg',
+              'tom.jpg',
+              'bheem.jpg',
+              'chutki.webp',
+              'Dholu_Bholu.webp',
+              'dq.jpg',
+              'heidi.jpg',
+              'krish.jpg',
+              'krishna.jpg',
+              'md.jpg',
+              'nobita.webp',
+              'nobithad.jpg',
+              'ram2.avif',
+              
+        ];
+
+        // Function to get a random image
+        function getRandomImage() {
+            return imageUrls[Math.floor(Math.random() * imageUrls.length)];
+        }
+
+        // Function to initialize the puzzle
+        function initializePuzzle() {
+            clearInterval(timerInterval);
+            timeRemaining = 60;
+            gameOver = false;
+            timerDisplay.textContent = 'Time Left: 60s';
+            startTimer();
+
+            container.innerHTML = ''; // Clear existing pieces
+            pieces = [];
+            currentImage = getRandomImage();
+            originalImageDisplay.style.backgroundImage = `url(${currentImage})`;
+
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                let piece = document.createElement('div');
+                piece.classList.add('puzzle-piece');
+                piece.style.backgroundImage = `url(${currentImage})`;
+                piece.style.backgroundPosition = `${-(i % gridSize) * 100}px ${-Math.floor(i / gridSize) * 100}px`;
+                piece.setAttribute('data-index', i);
+                pieces.push(piece);
+            }
+
+            // Shuffle the pieces
+            pieces = pieces.sort(() => Math.random() - 0.5);
+
+            // Append pieces to the container
+            pieces.forEach(piece => container.appendChild(piece));
+
+            // Add click event listeners for swapping
+            pieces.forEach(piece => {
+                piece.addEventListener('click', () => handlePieceClick(piece));
+            });
+        }
+
+        // Function to handle piece clicks
+        function handlePieceClick(piece) {
+            if (gameOver) return; // Prevent interaction when game is over
+
+            if (!selectedPiece) {
+                selectedPiece = piece;
+                piece.classList.add('selected');
+            } else {
+                swapPieces(selectedPiece, piece);
+                selectedPiece.classList.remove('selected');
+                selectedPiece = null;
+            }
+        }
+
+        // Function to swap two pieces
+        function swapPieces(piece1, piece2) {
+            const tempIndex = piece1.style.backgroundPosition;
+            piece1.style.backgroundPosition = piece2.style.backgroundPosition;
+            piece2.style.backgroundPosition = tempIndex;
+        }
+
+        // Function to check if the puzzle is solved
+        function isSolved() {
+            return Array.from(container.children).every((piece, index) => {
+                return piece.style.backgroundPosition ===
+                    `${-(index % gridSize) * 100}px ${-Math.floor(index / gridSize) * 100}px`;
+            });
+        }
+
+        // Timer function with countdown and game over check
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                timerDisplay.textContent = `Time Left: ${timeRemaining}s`;
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    gameOver = true; // Set game over to true
+                    alert("Time's up! You didn't solve the puzzle in time. Game over.");
+                }
+            }, 1000);
+        }
+
+        // Event listener for the submit button
+        submitBtn.addEventListener('click', () => {
+            if (gameOver) {
+                alert("The game is over. Restart to play again.");
+                return;
+            }
+
+            if (isSolved()) {
+                clearInterval(timerInterval);
+                alert(`Congratulations! You solved the puzzle with ${timeRemaining} seconds remaining.`);
+            } else {
+                alert("The puzzle is not solved yet. Keep trying!");
+            }
+        });
+
+        // Event listener for the restart button
+        restartBtn.addEventListener('click', initializePuzzle);
+
+        // Initialize the puzzle on page load
+        initializePuzzle();
+    </script>
+</body>
+</html>
