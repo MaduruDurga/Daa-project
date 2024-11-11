@@ -16,11 +16,13 @@
            background-position: center;
             margin: 0;
             font-family: Arial, sans-serif;
+            overflow: hidden;
         }
         #game-container {
             display: flex;
             align-items: flex-start;
             gap: 50px;
+            display: none;
         }
         #puzzle-container {
             display: grid;
@@ -48,8 +50,9 @@
             font-weight: bold;
             text-transform: capitalize;
             letter-spacing: 3px;
+            display: none;
         }
-        button {
+         #submit-btn,#restart-btn{
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
@@ -59,12 +62,32 @@
             border-style: solid;
             margin: 5px;
             background-color: rgb(17, 192, 52);
+            display: none;
         }
+        #play{
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: 800;
+            border-radius: 10px;
+            border-style: solid;
+            margin: 5px;
+            background-color: rgb(17, 192, 52);
+            animation-name:start;
+            animation-iteration-count:1;
+            animation-fill-mode: both;
+            animation-duration: 3s;
+            
+        }
+
+         
         #original-image {
             width: 125px;
             height: 125px;
             border: 2px solid #333;
             background-size: 100% 100%;
+            display: none;
         }
         .gameName {
             font-size: 50px;
@@ -78,6 +101,8 @@
             animation-iteration-count: infinite;
             animation-fill-mode: both;
             animation-duration: 3s;
+           
+
         
             
         }
@@ -85,40 +110,67 @@
             0% {
                 background-image:linear-gradient(to left,rgb(70, 153, 7),rgb(143, 12, 147),rgb(9, 129, 133));
                 font-style: italic;
+                
             }
             50% {
                 background-image:linear-gradient(to left,rgb(141, 211, 12),rgb(207, 136, 14),rgb(11, 102, 105)); 
                 font-style: normal;
+                              
             }
             100% {
                 background-image:linear-gradient(to left,rgb(230, 13, 13),rgb(19, 104, 241),rgb(184, 123, 10));
                 font-style: italic;
             }
         }
+        @keyframes start {
+            0% {
+                font-size: 50px;
+                font-style: italic;
+            
+                
+            }
+            50% {
+                rotate:360deg;
+                font-style: oblique;
+                filter: hue-rotate(720deg);
+                
+                              
+            }
+            100% {
+               font-style: bold;
+            }
+        }
         @media (max-width:767px) {
             #game-container {
-                gap: 15px;
+                gap: 5px;
+                
             }
+            
             .gameName {
                 font-size:40px ;
             }
         }
-        
+    
         
     </style>
 </head>
 <body>
-    
-        <h1 class="gameName">2D image puzzle game</h1>
+    <h1 class="gameName">2D image puzzle game</h1>
+    <div id="start-game">
+        <button id="play">Start game</button>
+    </div>
     <div id="timer">Time: 60s</div>
     <div id="game-container">
         <div id="puzzle-container"></div>
         <div id="original-image"></div>
     </div>
     <button id="submit-btn">Submit</button>
-    <button id="restart-btn">Play Again</button>
+    <button id="restart-btn">Restart</button>
 
     <script>
+        const startGame = document.getElementById("start-game");
+        const play = document.getElementById("play");
+        const gameContainer = document.getElementById("game-container");
         const container = document.getElementById("puzzle-container");
         const submitBtn = document.getElementById("submit-btn");
         const restartBtn = document.getElementById("restart-btn");
@@ -131,41 +183,44 @@
         let timerInterval;
         let timeRemaining = 60;
         let gameOver = false;
-
+        
         
         const imageUrls = [
             'https://assets.onecompiler.app/42rkv658c/42xdyqv5t/1000038909.jpg', 
             'https://assets.onecompiler.app/42rkv658c/42xdyqv5t/1000037454.jpg',
-            'animal.png',
-            'forest.jpg', 
-            'bird.webp',
-            'bujji.jpg',
-              'dhoni.jpeg',
-              'dora.png',
-              'dhoni1.avif',
-              'karthik.jpeg',
-              'keerthi.jpeg',
-              'motu.webp',
-              'patlu.jpeg',
-              'prabhas.webp',
-              'purple.jpg',
-              'ramcharan.jpeg',
-              'ratan.webp',
-              'saipallavi.jpg',
-              'shinchan.webp',
-              'smalltom.jpg',
-              'tom.jpg',
-              'bheem.jpg',
-              'chutki.webp',
-              'Dholu_Bholu.webp',
-              'dq.jpg',
-              'heidi.jpg',
-              'krish.jpg',
-              'krishna.jpg',
-              'md.jpg',
-              'nobita.webp',
-              'nobithad.jpg',
-              'ram2.avif',
+            'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/animal.png',
+            'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/back.avif', 
+            'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/bheem.jpg',
+            'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/bird.webp',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/bird.webp',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/bujji.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/Dholu_Bholu.webp',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/dhoni.jpeg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/dhoni1.avif',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/dora.png',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/dq.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/forest.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/heidi.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/heidi.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/karthik.jpeg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/keerthi.jpeg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/krish.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/krishna.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/md.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/motu.webp',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/nobita.webp',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/nobithad.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/patlu.jpeg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/prabhas.webp',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/purple.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/ram2.avif',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/ramcharan.jpeg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/ratan.webp',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/saipallavi.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/shinchan.webp',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/smalltom.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/tom.jpg',
+              'https://assets.onecompiler.app/42xeuatdq/42xstgz6g/chutki.webp',
               
         ];
 
@@ -173,6 +228,20 @@
         function getRandomImage() {
             return imageUrls[Math.floor(Math.random() * imageUrls.length)];
         }
+        play.addEventListener("click",()=> {
+            play.style.display ="none";
+            gameContainer.style.display ="flex";
+            originalImageDisplay.style.display = "flex";
+            timerDisplay.style.display = "block";
+            submitBtn.style.display = "flex";
+            restartBtn.style.display = "flex";
+            clearInterval(timerInterval);
+            timeRemaining = 60;
+            gameOver = false;
+            timerDisplay.textContent = 'Time Left: 60s';
+            startTimer();
+        })
+        
 
         // Function to initialize the puzzle
         function initializePuzzle() {
