@@ -43,7 +43,7 @@
         .selected {
             border: 2px solid red;
         }
-        #timer {
+        #timer,#moves {
             font-size: 32px;
             margin-bottom: 30px;
             color: white;
@@ -160,6 +160,7 @@
         <button id="play">Start game</button>
     </div>
     <div id="timer">Time: 60s</div>
+    <div id="moves">Moves: 0</div>
     <div id="game-container">
         <div id="puzzle-container"></div>
         <div id="original-image"></div>
@@ -175,6 +176,7 @@
         const submitBtn = document.getElementById("submit-btn");
         const restartBtn = document.getElementById("restart-btn");
         const timerDisplay = document.getElementById("timer");
+        const movesDisplay = document.getElementById("moves");
         const originalImageDisplay = document.getElementById("original-image");
         const gridSize = 3;
         let pieces = [];
@@ -182,6 +184,7 @@
         let currentImage = '';
         let timerInterval;
         let timeRemaining = 60;
+        let moves = 0;
         let gameOver = false;
         
         
@@ -234,6 +237,7 @@
             originalImageDisplay.style.display = "flex";
             timerDisplay.style.display = "block";
             submitBtn.style.display = "flex";
+            movesDisplay.style.display = "block";
             restartBtn.style.display = "flex";
             clearInterval(timerInterval);
             timeRemaining = 60;
@@ -241,14 +245,36 @@
             timerDisplay.textContent = 'Time Left: 60s';
             startTimer();
         })
+        // Divide and Conquer Shuffle
+        function divideAndConquerShuffle(arr) {
+            if (arr.length <= 1) return arr;
+            const mid = Math.floor(arr.length / 2);
+            const left = divideAndConquerShuffle(arr.slice(0, mid));
+            const right = divideAndConquerShuffle(arr.slice(mid));
+            return merge(left, right);
+        }
+
+        function merge(left, right) {
+            let result = [];
+            while (left.length && right.length) {
+                if (Math.random() < 0.5) {
+                    result.push(left.shift());
+                } else {
+                    result.push(right.shift());
+                }
+            }
+            return [...result, ...left, ...right];
+        }
         
 
         // Function to initialize the puzzle
         function initializePuzzle() {
             clearInterval(timerInterval);
             timeRemaining = 60;
+            moves = 0;
             gameOver = false;
             timerDisplay.textContent = 'Time Left: 60s';
+            movesDisplay.textContent = `Moves: ${moves}`;
             startTimer();
 
             container.innerHTML = ''; // Clear existing pieces
@@ -265,9 +291,8 @@
                 pieces.push(piece);
             }
 
-            // Shuffle the pieces
-            pieces = pieces.sort(() => Math.random() - 0.5);
-
+            // Shuffle using Divide and Conquer method
+            pieces = divideAndConquerShuffle(pieces);
             // Append pieces to the container
             pieces.forEach(piece => container.appendChild(piece));
 
@@ -288,6 +313,8 @@
                 swapPieces(selectedPiece, piece);
                 selectedPiece.classList.remove('selected');
                 selectedPiece = null;
+                moves++;
+                movesDisplay.textContent = `Moves: ${moves}`;
             }
         }
 
@@ -329,7 +356,7 @@
 
             if (isSolved()) {
                 clearInterval(timerInterval);
-                alert(`Congratulations! You solved the puzzle with ${timeRemaining} seconds remaining.`);
+                alert(`Congratulations! You solved the puzzle with ${moves} moves and ${timeRemaining} seconds remaining.`);
             } else {
                 alert("The puzzle is not solved yet. Keep trying!");
             }
